@@ -2,17 +2,13 @@ package com.flysword.entity;
 
 import com.flysword.key.ModKeys;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -23,10 +19,8 @@ import javax.annotation.Nullable;
 
 public class EntitySword extends EntityLiving {
 
-    private static final DataParameter<String> SWORD_ITEM_NAME = EntityDataManager.<String>createKey(EntitySword.class, DataSerializers.STRING);
+    private static final DataParameter<ItemStack> SWORD_ITEM_STACK = EntityDataManager.createKey(EntitySword.class, DataSerializers.ITEM_STACK);
     private static final DataParameter<Byte> CONTROL_STATE = EntityDataManager.createKey(EntitySword.class, DataSerializers.BYTE);
-
-    private ItemStack itemStack;
 
     public EntitySword(World worldIn) {
         super(worldIn);
@@ -36,41 +30,16 @@ public class EntitySword extends EntityLiving {
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataManager.register(SWORD_ITEM_NAME, "");
+        this.dataManager.register(SWORD_ITEM_STACK, ItemStack.EMPTY);
         this.dataManager.register(CONTROL_STATE, (byte) 0);
     }
 
     public void setItemStack(ItemStack itemStack) {
-        this.itemStack = itemStack;
-
-        ResourceLocation resourceLocation = itemStack.getItem().getRegistryName();
-        if (resourceLocation != null) {
-            this.dataManager.set(SWORD_ITEM_NAME, resourceLocation.getResourcePath());
-        }
+        this.dataManager.set(SWORD_ITEM_STACK, itemStack);
     }
 
     public ItemStack getItemStack() {
-        if (itemStack == null) {
-            Item item = Item.REGISTRY.getObject(new ResourceLocation(this.dataManager.get(SWORD_ITEM_NAME)));
-            if (item == null) {
-                item = Items.WOODEN_SWORD;
-            }
-            itemStack = new ItemStack(item);
-        }
-        return itemStack;
-    }
-
-    @Override
-    public void notifyDataManagerChange(@Nullable DataParameter<?> key) {
-        super.notifyDataManagerChange(key);
-
-        if (SWORD_ITEM_NAME.equals(key)) {
-            Item item = Item.REGISTRY.getObject(new ResourceLocation(this.dataManager.get(SWORD_ITEM_NAME)));
-            if (item == null) {
-                item = Items.WOODEN_SWORD;
-            }
-            itemStack = new ItemStack(item);
-        }
+        return this.dataManager.get(SWORD_ITEM_STACK);
     }
 
     @Override
@@ -153,19 +122,19 @@ public class EntitySword extends EntityLiving {
         }
     }
 
-    public boolean up() {
+    private boolean up() {
         return (dataManager.get(CONTROL_STATE) & 1) == 1;
     }
 
-    public boolean down() {
+    private boolean down() {
         return (dataManager.get(CONTROL_STATE) >> 1 & 1) == 1;
     }
 
-    public void up(boolean up) {
+    private void up(boolean up) {
         setStateField(0, up);
     }
 
-    public void down(boolean down) {
+    private void down(boolean down) {
         setStateField(1, down);
     }
 
@@ -235,7 +204,7 @@ public class EntitySword extends EntityLiving {
         }
     }
 
-    public void doTravel(float strafe, float vertical, float forward) {
+    private void doTravel(float strafe, float vertical, float forward) {
         if (this.isInWater()) {
             this.moveRelative(strafe, vertical, forward, 0.02F);
             this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
