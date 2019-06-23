@@ -129,8 +129,10 @@ public class EntitySword extends EntityLiving {
     @Override
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
-        if(passenger instanceof EntityPlayer) {
-            setDead();
+        if (passenger instanceof EntityPlayer) {
+            if (!world.isRemote) {
+                world.removeEntity(this);
+            }
         }
     }
 
