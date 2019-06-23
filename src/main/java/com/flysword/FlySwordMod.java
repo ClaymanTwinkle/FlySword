@@ -28,8 +28,6 @@ public class FlySwordMod {
     public static final String NAME = "Fly Sword Mod";
     public static final String VERSION = "1.0";
 
-    private static Logger logger;
-
     @Mod.Instance(FlySwordMod.MODID)
     public static FlySwordMod instance;
 
@@ -38,8 +36,6 @@ public class FlySwordMod {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
-
         EntityLoader.registerEntities();
         EntityRenderLoader.registerRenders();
         MyEnchantments.init();
@@ -61,7 +57,7 @@ public class FlySwordMod {
                 ItemStack stack = player.getHeldItemMainhand();
                 if (!player.isRiding() && EnchantmentHelper.getEnchantmentLevel(MyEnchantments.sFlySword, stack) > 0) {
                     stack.damageItem(1, player);
-                    if(stack.getItem().isDamaged(stack) || player.isCreative()) {
+                    if (stack.getItem().isDamaged(stack) || player.isCreative()) {
                         EntitySword entitySword = new EntitySword(world);
                         entitySword.setItemStack(new ItemStack(stack.getItem()));
                         entitySword.setPositionAndUpdate(player.posX, player.posY, player.posZ);
@@ -71,10 +67,5 @@ public class FlySwordMod {
                 }
             }
         }
-    }
-
-    @SideOnly(Side.CLIENT)
-    @SubscribeEvent
-    public void renderPlayer(RenderPlayerEvent.Post event) {
     }
 }
