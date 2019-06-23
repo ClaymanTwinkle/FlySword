@@ -49,6 +49,8 @@ public class FlySwordMod {
 
         MinecraftForge.EVENT_BUS.register(this);
 
+        ModKeys.init();
+
     }
 
     @SubscribeEvent

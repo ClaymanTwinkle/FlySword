@@ -1,5 +1,6 @@
 package com.flysword.entity;
 
+import com.flysword.ModKeys;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
@@ -119,10 +120,16 @@ public class EntitySword extends EntityLiving {
     }
 
     @Override
+    public void fall(float distance, float damageMultiplier) {
+        damageMultiplier = 0;
+        super.fall(distance, damageMultiplier);
+    }
+
+    @Override
     public void travel(float strafe, float vertical, float forward) {
         if (this.isBeingRidden() && this.getControllingPassenger() instanceof EntityPlayerSP) {
             EntityPlayerSP player = (EntityPlayerSP) getControllingPassenger();
-            if (player.movementInput.sneak) {
+            if (ModKeys.sKeyFlySwordDown.isKeyDown()) {
                 //player.movementInput.moveStrafe = (float) ((double) player.movementInput.moveStrafe / 0.3D);
                 //player.movementInput.moveForward = (float) ((double) player.movementInput.moveForward / 0.3D);
                 this.motionY -= (double) (0.03F);
