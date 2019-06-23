@@ -1,5 +1,6 @@
-package com.flysword;
+package com.flysword.render;
 
+import com.flysword.entity.EntitySword;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;

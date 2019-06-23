@@ -1,10 +1,10 @@
 package com.flysword;
 
+import com.flysword.entity.EntitySword;
 import com.flysword.loader.EntityLoader;
 import com.flysword.loader.EntityRenderLoader;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderPlayerEvent;

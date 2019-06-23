@@ -1,7 +1,7 @@
 package com.flysword.loader;
 
-import com.flysword.EntitySword;
-import com.flysword.RenderSword;
+import com.flysword.entity.EntitySword;
+import com.flysword.render.RenderSword;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
