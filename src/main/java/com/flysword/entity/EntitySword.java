@@ -1,6 +1,6 @@
 package com.flysword.entity;
 
-import com.flysword.ModKeys;
+import com.flysword.key.ModKeys;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
@@ -110,7 +110,9 @@ public class EntitySword extends EntityLiving {
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
         if(passenger instanceof EntityPlayer) {
-            setDead();
+            if(!world.isRemote) {
+                world.removeEntity(this);
+            }
         }
     }
 

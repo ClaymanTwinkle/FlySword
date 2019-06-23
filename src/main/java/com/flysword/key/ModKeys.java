@@ -1,4 +1,4 @@
-package com.flysword;
+package com.flysword.key;
 
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.client.registry.ClientRegistry;

@@ -1,10 +1,12 @@
 package com.flysword;
 
+import com.flysword.enchantment.MyEnchantments;
 import com.flysword.entity.EntitySword;
+import com.flysword.key.ModKeys;
 import com.flysword.loader.EntityLoader;
 import com.flysword.loader.EntityRenderLoader;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderPlayerEvent;
@@ -40,17 +42,14 @@ public class FlySwordMod {
 
         EntityLoader.registerEntities();
         EntityRenderLoader.registerRenders();
+        MyEnchantments.init();
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        // some example code
-        logger.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
-
         MinecraftForge.EVENT_BUS.register(this);
 
         ModKeys.init();
-
     }
 
     @SubscribeEvent
@@ -60,12 +59,15 @@ public class FlySwordMod {
             EntityPlayer player = event.getEntityPlayer();
             if (player != null) {
                 ItemStack stack = player.getHeldItemMainhand();
-                if (!stack.isEmpty()) {
-                    EntitySword entitySword = new EntitySword(world);
-                    entitySword.setItemStack(new ItemStack(stack.getItem()));
-                    entitySword.setPositionAndUpdate(player.posX, player.posY, player.posZ);
-                    world.spawnEntity(entitySword);
-                    event.getEntity().startRiding(entitySword);
+                if (!player.isRiding() && EnchantmentHelper.getEnchantmentLevel(MyEnchantments.sFlySword, stack) > 0) {
+                    stack.damageItem(1, player);
+                    if(stack.getItem().isDamaged(stack)) {
+                        EntitySword entitySword = new EntitySword(world);
+                        entitySword.setItemStack(new ItemStack(stack.getItem()));
+                        entitySword.setPositionAndUpdate(player.posX, player.posY, player.posZ);
+                        world.spawnEntity(entitySword);
+                        event.getEntity().startRiding(entitySword);
+                    }
                 }
             }
         }
