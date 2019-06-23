@@ -61,7 +61,7 @@ public class FlySwordMod {
                 ItemStack stack = player.getHeldItemMainhand();
                 if (!player.isRiding() && EnchantmentHelper.getEnchantmentLevel(MyEnchantments.sFlySword, stack) > 0) {
                     stack.damageItem(1, player);
-                    if(stack.getItem().isDamaged(stack)) {
+                    if(stack.getItem().isDamaged(stack) || player.isCreative()) {
                         EntitySword entitySword = new EntitySword(world);
                         entitySword.setItemStack(new ItemStack(stack.getItem()));
                         entitySword.setPositionAndUpdate(player.posX, player.posY, player.posZ);
