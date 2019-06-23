@@ -5,17 +5,23 @@ import com.flysword.entity.EntitySword;
 import com.flysword.key.ModKeys;
 import com.flysword.loader.EntityLoader;
 import com.flysword.loader.EntityRenderLoader;
+import net.minecraft.client.Minecraft;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.management.PlayerList;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.minecart.MinecartUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -36,16 +42,18 @@ public class FlySwordMod {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        EntityLoader.registerEntities();
-        EntityRenderLoader.registerRenders();
-        MyEnchantments.init();
+        proxy.preInit(event);
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
+        proxy.init(event);
         MinecraftForge.EVENT_BUS.register(this);
+    }
 
-        ModKeys.init();
+    @EventHandler
+    public void postInit(FMLPostInitializationEvent event) {
+        proxy.postInit(event);
     }
 
     @SubscribeEvent

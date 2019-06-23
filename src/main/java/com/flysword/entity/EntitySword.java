@@ -1,6 +1,7 @@
 package com.flysword.entity;
 
 import com.flysword.key.ModKeys;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,6 +15,8 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,6 +24,7 @@ import javax.annotation.Nullable;
 public class EntitySword extends EntityLiving {
 
     private static final DataParameter<String> SWORD_ITEM_NAME = EntityDataManager.<String>createKey(EntitySword.class, DataSerializers.STRING);
+    private static final DataParameter<Byte> CONTROL_STATE = EntityDataManager.createKey(EntitySword.class, DataSerializers.BYTE);
 
     private ItemStack itemStack;
 
@@ -33,6 +37,7 @@ public class EntitySword extends EntityLiving {
     protected void entityInit() {
         super.entityInit();
         this.dataManager.register(SWORD_ITEM_NAME, "");
+        this.dataManager.register(CONTROL_STATE, (byte) 0);
     }
 
     public void setItemStack(ItemStack itemStack) {
@@ -107,16 +112,6 @@ public class EntitySword extends EntityLiving {
     }
 
     @Override
-    protected void removePassenger(Entity passenger) {
-        super.removePassenger(passenger);
-        if(passenger instanceof EntityPlayer) {
-            if(!world.isRemote) {
-                world.removeEntity(this);
-            }
-        }
-    }
-
-    @Override
     public boolean canBeSteered() {
         return this.getControllingPassenger() instanceof EntityLivingBase;
     }
@@ -127,17 +122,69 @@ public class EntitySword extends EntityLiving {
         super.fall(distance, damageMultiplier);
     }
 
+    private boolean isRidingPlayer(EntityPlayer player) {
+        return this.isBeingRidden() && this.getControllingPassenger() == player;
+    }
+
+    @Override
+    protected void removePassenger(Entity passenger) {
+        super.removePassenger(passenger);
+        if(passenger instanceof EntityPlayer) {
+            setDead();
+        }
+    }
+
+    @Override
+    public void onUpdate() {
+        super.onUpdate();
+        if (world.isRemote) {
+            this.updateClientControls();
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    protected void updateClientControls() {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (this.isRidingPlayer(mc.player)) {
+            up(mc.gameSettings.keyBindJump.isKeyDown());
+            down(ModKeys.sKeyFlySwordDown.isKeyDown());
+        }
+    }
+
+    public boolean up() {
+        return (dataManager.get(CONTROL_STATE) & 1) == 1;
+    }
+
+    public boolean down() {
+        return (dataManager.get(CONTROL_STATE) >> 1 & 1) == 1;
+    }
+
+    public void up(boolean up) {
+        setStateField(0, up);
+    }
+
+    public void down(boolean down) {
+        setStateField(1, down);
+    }
+
+    private void setStateField(int i, boolean newState) {
+        byte prevState = dataManager.get(CONTROL_STATE);
+        if (newState) {
+            dataManager.set(CONTROL_STATE, (byte) (prevState | (1 << i)));
+        } else {
+            dataManager.set(CONTROL_STATE, (byte) (prevState & ~(1 << i)));
+        }
+    }
+
     @Override
     public void travel(float strafe, float vertical, float forward) {
-        if (this.isBeingRidden() && this.getControllingPassenger() instanceof EntityPlayerSP) {
-            EntityPlayerSP player = (EntityPlayerSP) getControllingPassenger();
-            if (ModKeys.sKeyFlySwordDown.isKeyDown()) {
-                //player.movementInput.moveStrafe = (float) ((double) player.movementInput.moveStrafe / 0.3D);
-                //player.movementInput.moveForward = (float) ((double) player.movementInput.moveForward / 0.3D);
+        if (this.isBeingRidden() && this.getControllingPassenger() instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) getControllingPassenger();
+            if (down()) {
                 this.motionY -= (double) (0.03F);
             }
 
-            if (player.movementInput.jump) {
+            if (up()) {
                 this.motionY += (double) (0.03F);
             }
 

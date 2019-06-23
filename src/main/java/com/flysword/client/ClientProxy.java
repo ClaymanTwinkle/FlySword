@@ -1,16 +1,28 @@
 package com.flysword.client;
 
 import com.flysword.CommonProxy;
+import com.flysword.key.ModKeys;
+import com.flysword.loader.EntityRenderLoader;
 import net.minecraft.item.Item;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class ClientProxy extends CommonProxy {
     @Override
-    public void registerItemRenderer(Item item, int meta, String id) {
+    public void preInit(FMLPreInitializationEvent event) {
+        super.preInit(event);
+        EntityRenderLoader.registerRenders();
     }
 
     @Override
-    public void registerModels()
-    {
+    public void init(FMLInitializationEvent event) {
+        super.init(event);
+        ModKeys.init();
     }
 
+    @Override
+    public void postInit(FMLPostInitializationEvent event) {
+        super.postInit(event);
+    }
 }

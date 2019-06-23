@@ -1,25 +1,28 @@
 package com.flysword;
 
+import com.flysword.enchantment.MyEnchantments;
+import com.flysword.key.ModKeys;
+import com.flysword.loader.EntityLoader;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 import java.util.UUID;
 
 public class CommonProxy {
 
-    public void registerItemRenderer(Item item, int meta, String id) {
-
+    public void preInit(FMLPreInitializationEvent event) {
+        EntityLoader.registerEntities();
+        MyEnchantments.init();
     }
-    public void registerModels()
-    {
 
+    public void init(FMLInitializationEvent event) {
     }
-    @SuppressWarnings("unchecked")
-    public EntityPlayer getPlayerFromUUID(String uuid) {
-        UUID uid = UUID.fromString(uuid);
-        return FMLCommonHandler.instance ().getMinecraftServerInstance ().getPlayerList ().getPlayerByUUID(uid);
 
+    public void postInit(FMLPostInitializationEvent event) {
 
     }
 }
