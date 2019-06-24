@@ -28,7 +28,6 @@ public class RenderSword extends Render<EntitySword> {
         World world = entity.world;
         if (world == null)
             return;
-        this.bindEntityTexture(entity);
         GlStateManager.pushMatrix();
         {
             GlStateManager.translate(x, y+1, z);

@@ -1,6 +1,7 @@
 package com.flysword.entity;
 
 import com.flysword.key.ModKeys;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
@@ -9,8 +10,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -253,5 +254,9 @@ public class EntitySword extends EntityLiving {
             this.moveRelative(strafe, vertical, forward, jumpMovementFactor);
             this.move(MoverType.SELF, this.motionX, this.motionY, this.motionZ);
         }
+    }
+
+    @Override
+    protected void playStepSound(BlockPos pos, Block blockIn) {
     }
 }
