@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -37,7 +38,9 @@ public class RenderSword extends Render<EntitySword> {
             GlStateManager.rotate(entityYaw+90, 0, 0, 1);
 
             RenderItem itemRender = Minecraft.getMinecraft().getRenderItem();
-            itemRender.renderItem(entity.getItemStack(), itemRender.getItemModelWithOverrides(entity.getItemStack(), entity.world, null));
+
+            ItemStack renderItemStack = entity.getRenderItemStack();
+            itemRender.renderItem(renderItemStack, itemRender.getItemModelWithOverrides(renderItemStack, entity.world, null));
         }
         GlStateManager.popMatrix();
 

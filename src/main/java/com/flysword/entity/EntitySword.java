@@ -9,6 +9,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -21,6 +23,8 @@ public class EntitySword extends EntityLiving {
 
     private static final DataParameter<ItemStack> SWORD_ITEM_STACK = EntityDataManager.createKey(EntitySword.class, DataSerializers.ITEM_STACK);
     private static final DataParameter<Byte> CONTROL_STATE = EntityDataManager.createKey(EntitySword.class, DataSerializers.BYTE);
+
+    private ItemStack renderItemStack;
 
     public EntitySword(World worldIn) {
         super(worldIn);
@@ -40,6 +44,13 @@ public class EntitySword extends EntityLiving {
 
     public ItemStack getItemStack() {
         return this.dataManager.get(SWORD_ITEM_STACK);
+    }
+
+    public ItemStack getRenderItemStack() {
+        if (renderItemStack == null) {
+            renderItemStack = new ItemStack(getItemStack().getItem());
+        }
+        return renderItemStack;
     }
 
     @Override
@@ -70,6 +81,15 @@ public class EntitySword extends EntityLiving {
         return this.getPassengers().isEmpty() ? null : this.getPassengers().get(0);
     }
 
+    private EntityPlayer getControllingPlayer() {
+        Entity entity = getControllingPassenger();
+        if (entity instanceof EntityPlayer) {
+            return (EntityPlayer) getControllingPassenger();
+        }
+
+        return null;
+    }
+
     @Override
     public void updatePassenger(@Nonnull Entity passenger) {
         super.updatePassenger(passenger);
@@ -96,18 +116,30 @@ public class EntitySword extends EntityLiving {
     }
 
     @Override
-    protected void removePassenger(Entity passenger) {
-        super.removePassenger(passenger);
-        if (passenger instanceof EntityPlayer) {
+    protected boolean processInteract(EntityPlayer player, EnumHand hand) {
+        if (!isRidingPlayer(player)) {
+            setDead();
             if (!world.isRemote) {
-                world.removeEntity(this);
+                entityDropItem(getItemStack(), 0);
             }
         }
+        return true;
     }
+
 
     @Override
     public void onUpdate() {
+        EntityPlayer player = getControllingPlayer();
+        if (player != null && player.isSneaking()) {
+            setDead();
+            if (!world.isRemote) {
+                entityDropItem(getItemStack(), 0);
+            }
+            return;
+        }
+
         super.onUpdate();
+
         if (world.isRemote) {
             this.updateClientControls();
         }
@@ -149,8 +181,8 @@ public class EntitySword extends EntityLiving {
 
     @Override
     public void travel(float strafe, float vertical, float forward) {
-        if (this.isBeingRidden() && this.getControllingPassenger() instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) getControllingPassenger();
+        EntityPlayer player;
+        if (this.isBeingRidden() && (player = getControllingPlayer()) != null) {
             if (down()) {
                 this.motionY -= (double) (0.03F);
             }
@@ -177,7 +209,7 @@ public class EntitySword extends EntityLiving {
             if (this.canPassengerSteer()) {
                 this.setAIMoveSpeed(player.getAIMoveSpeed() * 2F);
                 doTravel(strafe, vertical, forward);
-            } else if (player instanceof EntityPlayer) {
+            } else {
                 this.motionX = 0.0D;
                 this.motionY = 0.0D;
                 this.motionZ = 0.0D;
