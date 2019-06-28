@@ -1,4 +1,5 @@
 ## Fly Sword（御剑飞行）
+[![Build Status](https://www.travis-ci.org/ClaymanTwinkle/FlySword.svg?branch=master)](https://www.travis-ci.org/ClaymanTwinkle/FlySword)
 
 每个人都有一个仙剑梦……
 
