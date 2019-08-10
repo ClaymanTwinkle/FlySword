@@ -30,6 +30,7 @@ public class RenderSword extends Render<EntitySword> {
             return;
         GlStateManager.pushMatrix();
         {
+            this.bindEntityTexture(entity);
             GlStateManager.translate(x, y+1, z);
             GlStateManager.rotate(-45, 0, 0, 1);
             GlStateManager.rotate(90, 1, 1, 0);
