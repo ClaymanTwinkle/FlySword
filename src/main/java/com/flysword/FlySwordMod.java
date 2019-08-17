@@ -71,6 +71,7 @@ public class FlySwordMod {
                         player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
                         EntitySword entitySword = new EntitySword(world);
                         entitySword.setItemStack(stack);
+                        entitySword.setOwnerId(player.getUniqueID());
                         entitySword.setPositionAndUpdate(player.posX, player.posY, player.posZ);
                         world.spawnEntity(entitySword);
                         event.getEntity().startRiding(entitySword);

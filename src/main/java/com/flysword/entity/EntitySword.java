@@ -1,15 +1,18 @@
 package com.flysword.entity;
 
 import com.flysword.key.ModKeys;
+import com.google.common.base.Optional;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.*;
+import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -19,11 +22,16 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class EntitySword extends EntityLiving {
 
+    private static final String NBT_KEY_RENDER_ITEM = "RenderItem";
+    private static final String NBT_KEY_OWNER_UUID = "OwnerUUID";
+
     private static final DataParameter<ItemStack> SWORD_ITEM_STACK = EntityDataManager.createKey(EntitySword.class, DataSerializers.ITEM_STACK);
     private static final DataParameter<Byte> CONTROL_STATE = EntityDataManager.createKey(EntitySword.class, DataSerializers.BYTE);
+    protected static final DataParameter<Optional<UUID>> OWNER_UNIQUE_ID = EntityDataManager.<Optional<UUID>>createKey(EntitySword.class, DataSerializers.OPTIONAL_UNIQUE_ID);
 
     private ItemStack renderItemStack;
 
@@ -37,6 +45,7 @@ public class EntitySword extends EntityLiving {
         super.entityInit();
         this.dataManager.register(SWORD_ITEM_STACK, ItemStack.EMPTY);
         this.dataManager.register(CONTROL_STATE, (byte) 0);
+        this.dataManager.register(OWNER_UNIQUE_ID, Optional.absent());
     }
 
     public void setItemStack(ItemStack itemStack) {
@@ -54,12 +63,37 @@ public class EntitySword extends EntityLiving {
         return renderItemStack;
     }
 
+    public UUID getOwnerId() {
+        return (UUID) ((Optional) this.dataManager.get(OWNER_UNIQUE_ID)).orNull();
+    }
+
+    public void setOwnerId(@Nullable UUID p_184754_1_) {
+        this.dataManager.set(OWNER_UNIQUE_ID, Optional.fromNullable(p_184754_1_));
+    }
+
+    public EntityLivingBase getOwner() {
+        try {
+            UUID uuid = this.getOwnerId();
+            return uuid == null ? null : this.world.getPlayerEntityByUUID(uuid);
+        } catch (IllegalArgumentException var2) {
+            return null;
+        }
+    }
+
+    public boolean isOwner(Entity entityIn) {
+        return entityIn instanceof EntityPlayer && entityIn == this.getOwner();
+    }
+
+
     @Override
     public void readEntityFromNBT(NBTTagCompound compound) {
         super.readEntityFromNBT(compound);
 
-        if (compound.hasKey("RenderItem", 10)) {
-            this.setItemStack(new ItemStack(compound.getCompoundTag("RenderItem")));
+        if (compound.hasKey(NBT_KEY_RENDER_ITEM, 10)) {
+            this.setItemStack(new ItemStack(compound.getCompoundTag(NBT_KEY_RENDER_ITEM)));
+        }
+        if (compound.hasKey(NBT_KEY_OWNER_UUID)) {
+            this.setOwnerId(compound.getUniqueId(NBT_KEY_OWNER_UUID));
         }
     }
 
@@ -68,7 +102,10 @@ public class EntitySword extends EntityLiving {
         super.writeEntityToNBT(compound);
 
         if (!this.getItemStack().isEmpty()) {
-            compound.setTag("RenderItem", this.getItemStack().writeToNBT(new NBTTagCompound()));
+            compound.setTag(NBT_KEY_RENDER_ITEM, this.getItemStack().writeToNBT(new NBTTagCompound()));
+        }
+        if (this.getOwnerId() != null) {
+            compound.setUniqueId(NBT_KEY_OWNER_UUID, getOwnerId());
         }
     }
 
@@ -117,25 +154,22 @@ public class EntitySword extends EntityLiving {
     }
 
     @Override
-    protected boolean processInteract(EntityPlayer player, EnumHand hand) {
-        if (!isRidingPlayer(player)) {
-            setDead();
-            if (!world.isRemote) {
-                entityDropItem(getItemStack(), 0);
-            }
+    public boolean attackEntityFrom(DamageSource source, float amount) {
+        EntityPlayer player = getControllingPlayer();
+        if (player != null) {
+            return false;
         }
-        return true;
+        if (isOwner(source.getTrueSource())) {
+            putAwaySword((EntityPlayer) source.getTrueSource());
+        }
+        return false;
     }
-
 
     @Override
     public void onUpdate() {
         EntityPlayer player = getControllingPlayer();
         if (player != null && player.isSneaking()) {
-            setDead();
-            if (!world.isRemote) {
-                entityDropItem(getItemStack(), 0);
-            }
+            putAwaySword(player);
             return;
         }
 
@@ -152,6 +186,16 @@ public class EntitySword extends EntityLiving {
         if (this.isRidingPlayer(mc.player)) {
             up(mc.gameSettings.keyBindJump.isKeyDown());
             down(ModKeys.sKeyFlySwordDown.isKeyDown());
+        }
+    }
+
+    private void putAwaySword(EntityPlayer player) {
+        setDead();
+        if (!world.isRemote) {
+            ItemStack sword = getItemStack();
+            if (!player.addItemStackToInventory(sword)) {
+                entityDropItem(sword, 0);
+            }
         }
     }
 
