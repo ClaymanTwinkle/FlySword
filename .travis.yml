@@ -1,18 +1,7 @@
 language: java
 sudo: required
-jdk: oraclejdk8
 before_install:
 - sudo chmod +x ./gradlew
 - "./gradlew setupDecompWorkspace"
 script:
 - "./gradlew build"
-deploy:
-  provider: releases
-  api_key:
-    secure: PVjqEPG7oyJw+fOzEWZPCCuaCsa6kz1BNK2dveK9vy+Xh1uDBg5QIqLpDoGSdI4MymPjYWlp924MOcIqpZbr+eRsV2e58KzYd57naBrRlok55fq74T8M1dqYQa1rsKcxDjb75TaT55Ot2kYoHvGzyC7LkENDBGdrTQqad8qSep8e+IAmU0BqoBd2xcM1KGxwLyGXbIYDdXDjpn1hD14fwnqngYeCjLJtOt1ufEUDry7xiZ03REwvms6k3oMGAIC/FaqKFNZ8usslshXI6cKgO2alzCmtlnpX+NgE0cCq59zxD5BCk+pKq1WXKBJc0t9w1x0bwJPK38WP5+P/23mqPHsAm3riHjW6LTF6eQE1niIfrbjH4E4bziXuhtwWX19t2woZp4+X+OcRneioyQojp4Wf1MMvX2N24XmeoQ4VAcYwad9PauGCg6c21+nAZrkYuAEiTyV6kRspdfKl3G8VwuLxxt66oLk7wG5UzooIxMITKdbmgHlidW9kadfJAkAcMOSjOaYJuimU5YqdT1eoWu8IKAeKzhYVlPpqcMuwaCM+bfRRszZrE4eYMVLPMQjNlP2Gzqn8mBaW5yJF4dyrd64Wt8xWM1FUSz9j5VcTMAHEYuqvLBu/Oik0CxLgYz8i7+0IhZrMSEm/DS9J61wFeuULO1cIqWSZitU/kxaMziM=
-  file: ./build/libs/*.jar
-  file_glob: true
-  skip_cleanup: true
-  on:
-    tags: true
-    all_branches: true
