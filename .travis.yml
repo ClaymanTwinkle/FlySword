@@ -1,5 +1,6 @@
 language: java
 sudo: required
+jdk: oraclejdk8
 before_install:
 - sudo chmod +x ./gradlew
 - "./gradlew setupDecompWorkspace"
