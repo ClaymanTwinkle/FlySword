@@ -23,7 +23,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class FlySwordMod {
     public static final String MODID = "flysword";
     public static final String NAME = "Fly Sword Mod";
-    public static final String VERSION = "1.0.2";
+    public static final String VERSION = "1.1.0";
 
     @Mod.Instance(FlySwordMod.MODID)
     public static FlySwordMod instance;
