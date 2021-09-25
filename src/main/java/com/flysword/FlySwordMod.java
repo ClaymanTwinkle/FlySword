@@ -1,22 +1,15 @@
 package com.flysword;
 
-import com.flysword.enchantment.MyEnchantments;
+import com.flysword.enchantment.ModEnchantments;
 import com.flysword.entity.EntitySword;
-import com.flysword.key.ModKeys;
-import com.flysword.loader.EntityLoader;
-import com.flysword.loader.EntityRenderLoader;
-import net.minecraft.client.Minecraft;
+import com.flysword.network.server.SpawnSwordBeamPacket;
+import com.flysword.utils.PacketDispatcher;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.minecart.MinecartUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -25,10 +18,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.logging.log4j.Logger;
 
 @Mod(modid = FlySwordMod.MODID, name = FlySwordMod.NAME, version = FlySwordMod.VERSION)
 public class FlySwordMod {
@@ -45,12 +34,13 @@ public class FlySwordMod {
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
+        PacketDispatcher.initialize();
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
         proxy.init(event);
-        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @EventHandler
@@ -65,7 +55,7 @@ public class FlySwordMod {
             EntityPlayer player = event.getEntityPlayer();
             if (player != null) {
                 ItemStack stack = player.getHeldItemMainhand();
-                if (!player.isRiding() && EnchantmentHelper.getEnchantmentLevel(MyEnchantments.sFlySword, stack) > 0) {
+                if (!player.isRiding() && EnchantmentHelper.getEnchantmentLevel(ModEnchantments.sFlySword, stack) > 0) {
                     stack.damageItem(1, player);
                     if (stack.getItem().isDamaged(stack) || player.isCreative()) {
                         player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
@@ -80,4 +70,13 @@ public class FlySwordMod {
             }
         }
     }
+
+    @SubscribeEvent
+    public void playAttack(PlayerInteractEvent.LeftClickEmpty event) {
+        World world = event.getWorld();
+        if (world.isRemote) {
+            PacketDispatcher.sendToServer(new SpawnSwordBeamPacket());
+        }
+    }
+
 }
