@@ -11,7 +11,7 @@ public class EnchantmentSwordBeam extends Enchantment {
     public static final String NAME = "swordbeam";
 
     protected EnchantmentSwordBeam() {
-        super(Enchantment.Rarity.UNCOMMON, EnumEnchantmentType.WEAPON, EntityEquipmentSlot.values());
+        super(Enchantment.Rarity.RARE, EnumEnchantmentType.WEAPON, EntityEquipmentSlot.values());
         this.setName(NAME);
     }
 

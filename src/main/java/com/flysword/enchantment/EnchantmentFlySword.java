@@ -11,7 +11,7 @@ public class EnchantmentFlySword extends Enchantment{
     public static final String NAME = "flysword";
 
     protected EnchantmentFlySword() {
-        super(Enchantment.Rarity.UNCOMMON, EnumEnchantmentType.WEAPON, EntityEquipmentSlot.values());
+        super(Enchantment.Rarity.RARE, EnumEnchantmentType.WEAPON, EntityEquipmentSlot.values());
         this.setName(NAME);
     }
 
