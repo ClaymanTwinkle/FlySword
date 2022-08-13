@@ -110,7 +110,11 @@ public class EntitySwordBeam extends EntityThrowable {
     public void onUpdate() {
         super.onUpdate();
         if (inGround || ticksExisted > lifespan) {
-            setDead();
+            if (!this.world.isRemote) {
+                this.world.setEntityState(this, (byte)3);
+                setDead();
+                return;
+            }
         }
         for (int i = 0; i < 2; ++i) {
             EnumParticleTypes particle = (i % 2 == 1) ? EnumParticleTypes.CRIT_MAGIC : EnumParticleTypes.CRIT;
@@ -121,7 +125,7 @@ public class EntitySwordBeam extends EntityThrowable {
 
     @Override
     protected void onImpact(RayTraceResult result) {
-        if (!getEntityWorld().isRemote) {
+        if (!this.world.isRemote) {
             EntityPlayer player = (getThrower() instanceof EntityPlayer ? (EntityPlayer) getThrower() : null);
             if (result.typeOfHit == RayTraceResult.Type.ENTITY) {
                 if (result.entityHit == player) {
@@ -134,10 +138,12 @@ public class EntitySwordBeam extends EntityThrowable {
                     damage *= 0.8F;
                 }
                 if (this.level < ModEnchantments.sSwordBeam.getMaxLevel()) {
+                    this.world.setEntityState(this, (byte)3);
                     setDead();
                 }
             } else {
                 if (getEntityWorld().getBlockState(result.getBlockPos()).getMaterial().blocksMovement()) {
+                    this.world.setEntityState(this, (byte)3);
                     setDead();
                 }
             }
