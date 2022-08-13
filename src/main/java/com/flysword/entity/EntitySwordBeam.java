@@ -19,6 +19,7 @@ package com.flysword.entity;
 
 import com.flysword.enchantment.ModEnchantments;
 import com.flysword.utils.PlayerUtils;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityThrowable;
@@ -27,30 +28,40 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EntityDamageSourceIndirect;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
- *
  * Sword beam shot from Link's sword when at full health. Inflicts a portion of
  * the original sword's base damage to the first entity struck, less 20% for each
  * additional target thus struck.
- *
+ * <p>
  * If using the Master Sword, the beam will shoot through enemies, hitting all
  * entities in its direct path.
- *
  */
 public class EntitySwordBeam extends EntityThrowable {
-    /** Damage that will be inflicted on impact */
+    /**
+     * Damage that will be inflicted on impact
+     */
     private float damage = 4.0F;
 
-    /** Skill level of user; affects range */
+    /**
+     * Skill level of user; affects range
+     */
     private int level = 1;
 
-    /** Base number of ticks this entity can exist */
+    /**
+     * Base number of ticks this entity can exist
+     */
     private int lifespan = 12;
+
+    /**
+     * The amount of knockback an arrow applies when it hits a mob.
+     */
+    private int knockbackStrength = 1;
 
     public EntitySwordBeam(World world) {
         super(world);
@@ -111,7 +122,7 @@ public class EntitySwordBeam extends EntityThrowable {
         super.onUpdate();
         if (inGround || ticksExisted > lifespan) {
             if (!this.world.isRemote) {
-                this.world.setEntityState(this, (byte)3);
+                this.world.setEntityState(this, (byte) 3);
                 setDead();
                 return;
             }
@@ -128,22 +139,32 @@ public class EntitySwordBeam extends EntityThrowable {
         if (!this.world.isRemote) {
             EntityPlayer player = (getThrower() instanceof EntityPlayer ? (EntityPlayer) getThrower() : null);
             if (result.typeOfHit == RayTraceResult.Type.ENTITY) {
-                if (result.entityHit == player) {
+                Entity entityHit = result.entityHit;
+                if (entityHit == player || entityHit == null) {
                     return;
                 }
                 if (player != null) {
-                    if (result.entityHit.attackEntityFrom(new EntityDamageSourceIndirect("indirectSword", this, player).setProjectile(), damage)) {
-                        PlayerUtils.playSoundAtEntity(getEntityWorld(), result.entityHit, SoundEvents.ENTITY_PLAYER_ATTACK_STRONG, SoundCategory.PLAYERS, 0.4F, 0.5F);
+                    if (entityHit.attackEntityFrom(new EntityDamageSourceIndirect("indirectSword", this, player).setProjectile(), damage)) {
+                        PlayerUtils.playSoundAtEntity(getEntityWorld(), entityHit, SoundEvents.ENTITY_PLAYER_ATTACK_STRONG, SoundCategory.PLAYERS, 0.4F, 0.5F);
+                        if (entityHit instanceof EntityLivingBase) {
+                            if (this.knockbackStrength > 0) {
+                                float f1 = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+
+                                if (f1 > 0.0F) {
+                                    entityHit.addVelocity(this.motionX * (double) this.knockbackStrength * 0.6000000238418579D / (double) f1, 0.1D, this.motionZ * (double) this.knockbackStrength * 0.6000000238418579D / (double) f1);
+                                }
+                            }
+                        }
                     }
                     damage *= 0.8F;
                 }
                 if (this.level < ModEnchantments.sSwordBeam.getMaxLevel()) {
-                    this.world.setEntityState(this, (byte)3);
+                    this.world.setEntityState(this, (byte) 3);
                     setDead();
                 }
             } else {
                 if (getEntityWorld().getBlockState(result.getBlockPos()).getMaterial().blocksMovement()) {
-                    this.world.setEntityState(this, (byte)3);
+                    this.world.setEntityState(this, (byte) 3);
                     setDead();
                 }
             }
